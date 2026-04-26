@@ -72,32 +72,117 @@ export interface Database {
         Row: Profile
         Insert: Omit<Profile, 'created_at'>
         Update: Partial<Omit<Profile, 'id' | 'created_at'>>
+        Relationships: []
       }
       rooms: {
         Row: Room
         Insert: Omit<Room, 'id' | 'created_at'>
         Update: Partial<Omit<Room, 'id' | 'created_at'>>
+        Relationships: []
       }
       tasks: {
         Row: Task & { flag_hash: string }
         Insert: Omit<Task, 'id' | 'created_at'> & { flag_hash: string }
-        Update: Partial<Omit<Task, 'id' | 'created_at'>>
+        Update: Partial<Omit<Task, 'id' | 'created_at'> & { flag_hash?: string }>
+        Relationships: [
+          {
+            foreignKeyName: 'tasks_room_id_fkey'
+            columns: ['room_id']
+            isOneToOne: false
+            referencedRelation: 'rooms'
+            referencedColumns: ['id']
+          },
+        ]
       }
       challenges: {
         Row: Challenge & { flag_hash: string }
         Insert: Omit<Challenge, 'id' | 'created_at'> & { flag_hash: string }
-        Update: Partial<Omit<Challenge, 'id' | 'created_at'>>
+        Update: Partial<Omit<Challenge, 'id' | 'created_at'> & { flag_hash?: string }>
+        Relationships: []
       }
       submissions: {
         Row: Submission
         Insert: Omit<Submission, 'id' | 'created_at'>
-        Update: never
+        Update: Partial<Omit<Submission, 'id' | 'created_at'>>
+        Relationships: [
+          {
+            foreignKeyName: 'submissions_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
       }
       user_progress: {
         Row: UserProgress
         Insert: UserProgress
         Update: Partial<Pick<UserProgress, 'status' | 'solved_at'>>
+        Relationships: [
+          {
+            foreignKeyName: 'user_progress_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'user_progress_room_id_fkey'
+            columns: ['room_id']
+            isOneToOne: false
+            referencedRelation: 'rooms'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'user_progress_task_id_fkey'
+            columns: ['task_id']
+            isOneToOne: false
+            referencedRelation: 'tasks'
+            referencedColumns: ['id']
+          },
+        ]
       }
+      rate_limits: {
+        Row: {
+          id: string
+          user_id: string | null
+          ip_address: string | null
+          action: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          ip_address?: string | null
+          action?: string
+          created_at?: string
+        }
+        Update: Partial<{
+          user_id: string | null
+          ip_address: string | null
+          action: string
+        }>
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      increment_points: {
+        Args: { p_user_id: string; p_points: number }
+        Returns: undefined
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }
