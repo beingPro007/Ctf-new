@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
+import { LabStatusBanner } from '@/components/lab-status-banner'
 import { cn } from '@/lib/utils'
 import { CheckCircle2, Lock, ArrowRight, ChevronLeft } from 'lucide-react'
 
@@ -26,7 +27,7 @@ export default async function RoomDetailPage({ params }: PageProps) {
 
   const { data: tasks } = await supabase
     .from('tasks')
-    .select('id, title, description, points, task_index, hints')
+    .select('id, title, description, points, task_index, hints, attachment_paths')
     .eq('room_id', roomId)
     .order('task_index')
 
@@ -37,10 +38,12 @@ export default async function RoomDetailPage({ params }: PageProps) {
     .eq('room_id', roomId)
 
   const progressMap: Record<string, string> = {}
-  progress?.forEach((p) => { progressMap[p.task_id] = p.status })
+    ; (progress as any)?.forEach((p: any) => { progressMap[p.task_id] = p.status })
 
-  const solvedCount = progress?.filter((p) => p.status === 'solved').length ?? 0
+  const solvedCount = (progress as any)?.filter((p: any) => p.status === 'solved').length ?? 0
   const totalCount = tasks?.length ?? 0
+
+  const hasMachines = (tasks as any)?.some((t: any) => (t.attachment_paths?.length ?? 0) > 0) ?? false
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -56,12 +59,12 @@ export default async function RoomDetailPage({ params }: PageProps) {
       {/* Room header */}
       <div className="border border-[#1f1f1f] bg-[#0f0f0f] p-6">
         <div className="flex items-start justify-between gap-4 mb-3">
-          <h1 className="text-xl font-mono font-bold text-[#e6e6e6]">{room.title}</h1>
-          <Badge variant={room.difficulty as 'easy' | 'medium' | 'hard' | 'insane'}>
-            {room.difficulty}
+          <h1 className="text-xl font-mono font-bold text-[#e6e6e6]">{(room as any).title}</h1>
+          <Badge variant={(room as any).difficulty as 'easy' | 'medium' | 'hard' | 'insane'}>
+            {(room as any).difficulty}
           </Badge>
         </div>
-        <p className="text-sm text-[#666] font-mono mb-4">{room.description}</p>
+        <p className="text-sm text-[#666] font-mono mb-4">{(room as any).description}</p>
         <div className="flex items-center gap-4">
           <span className="text-xs text-[#444] font-mono">
             Progress: <span className="text-[#00ff66]">{solvedCount}/{totalCount}</span>
@@ -75,24 +78,26 @@ export default async function RoomDetailPage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* Lab Banner */}
+      <LabStatusBanner hasMachines={hasMachines} />
+
       {/* Task list */}
       <div className="space-y-2">
-        <h2 className="text-xs font-mono text-[#444] tracking-widest px-1">TASKS</h2>
+        <h2 className="text-xs font-mono text-[#444] tracking-widest px-1 uppercase mb-3">Tasks</h2>
         {!tasks || tasks.length === 0 ? (
           <div className="border border-[#1f1f1f] p-8 text-center">
             <p className="text-xs text-[#444] font-mono">No tasks in this room yet</p>
           </div>
         ) : (
           tasks.map((task, index) => {
-            const taskProgress = progressMap[task.id]
+            const taskProgress = progressMap[(task as any).id]
             const isSolved = taskProgress === 'solved'
             const isUnlocked = taskProgress === 'unlocked' || isSolved
-            // First task is always accessible
             const isAccessible = index === 0 || isUnlocked
 
             return (
               <div
-                key={task.id}
+                key={(task as any).id}
                 className={cn(
                   'border transition-all',
                   isSolved
@@ -125,23 +130,26 @@ export default async function RoomDetailPage({ params }: PageProps) {
                               : 'text-[#333]'
                         )}
                       >
-                        {task.title}
+                        {(task as any).title}
                       </p>
-                      <p className="text-[10px] text-[#444] font-mono">
-                        {task.points} points
-                        {task.hints.length > 0 && (
-                          <span className="ml-2 text-[#333]">• {task.hints.length} hints</span>
+                      <div className="flex items-center gap-2 text-[10px] font-mono">
+                        <span className="text-[#555]">{(task as any).points} PTS</span>
+                        {(task as any).hints?.length > 0 && (
+                          <span className="text-[#333]">• {(task as any).hints.length} hints</span>
                         )}
-                      </p>
+                        {((task as any).attachment_paths?.length ?? 0) > 0 && (
+                          <span className="text-[#00ff66] uppercase font-bold text-[9px] border border-[#00ff66]/30 px-1 ml-1 tracking-tighter">Lab Ready</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   {isAccessible && (
                     <Link
-                      href={`/rooms/${roomId}/tasks/${task.id}`}
+                      href={`/rooms/${roomId}/tasks/${(task as any).id}`}
                       className="flex items-center gap-1 text-xs font-mono text-[#444] hover:text-[#00ff66] transition-colors shrink-0"
                     >
-                      {isSolved ? 'Review' : 'Start'}
+                      {isSolved ? 'Review' : 'Deploy & Attack'}
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   )}

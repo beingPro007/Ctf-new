@@ -24,7 +24,7 @@ async function requireAdmin(): Promise<{ userId: string } | { error: string }> {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') return { error: 'Forbidden: Admin access required' }
+  if ((profile as { role: string } | null)?.role !== 'admin') return { error: 'Forbidden: Admin access required' }
 
   return { userId: user.id }
 }

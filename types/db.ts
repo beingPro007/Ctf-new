@@ -67,6 +67,7 @@ export interface UserProgress {
 
 export interface Database {
   public: {
+    PostgrestVersion: "12"
     Tables: {
       profiles: {
         Row: Profile

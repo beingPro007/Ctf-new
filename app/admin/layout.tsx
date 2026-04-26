@@ -8,6 +8,7 @@ const adminNav = [
   { href: '/admin/rooms', label: 'Rooms & Tasks' },
   { href: '/admin/challenges', label: 'Challenges' },
   { href: '/admin/users', label: 'Users' },
+  { href: '/admin/infrastructure', label: '🐳 Infrastructure' },
 ]
 
 export default async function AdminLayout({
@@ -23,10 +24,10 @@ export default async function AdminLayout({
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', user.id)
+    .eq('id', user!.id)
     .single()
 
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  if ((profile as { role: string } | null)?.role !== 'admin') redirect('/dashboard')
 
   return (
     <div className="flex min-h-screen">

@@ -1,0 +1,126 @@
+version: '3.9'
+
+networks:
+  ctf-net:
+    driver: bridge
+
+services:
+
+  # ── PWN-001: Buffer Overflow (C) ─────────────────────────────────────────
+  pwn-001:
+    build: ./pwn-001
+    container_name: ctf-pwn-001
+    ports:
+      - "4001:4001"
+    networks: [ ctf-net ]
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: '0.25'
+    labels:
+      - "ctf.challenge=pwn-001"
+      - "ctf.category=pwn"
+      - "ctf.difficulty=medium"
+      - "ctf.description=Classic stack buffer overflow. Overwrite the return address to call win()."
+      - "ctf.connection=nc YOUR_IP 4001"
+
+  # ── WEB-001: SQL Injection (Flask) ────────────────────────────────────────
+  web-001:
+    build: ./web-001
+    container_name: ctf-web-001
+    ports:
+      - "5001:5001"
+    networks: [ ctf-net ]
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: '0.25'
+    labels:
+      - "ctf.challenge=web-001"
+      - "ctf.category=web"
+      - "ctf.difficulty=easy"
+      - "ctf.description=SQL Injection login bypass. Leak the secrets table."
+      - "ctf.connection=http://YOUR_IP:5001"
+
+  # ── WEB-002: Local File Inclusion (PHP) ───────────────────────────────────
+  web-002:
+    build: ./web-002
+    container_name: ctf-web-002
+    ports:
+      - "5002:80"
+    networks: [ ctf-net ]
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: '0.25'
+    labels:
+      - "ctf.challenge=web-002"
+      - "ctf.category=web"
+      - "ctf.difficulty=easy"
+      - "ctf.description=PHP Local File Inclusion. Traverse the file system to read the flag."
+      - "ctf.connection=http://YOUR_IP:5002"
+
+  # ── WEB-003: Command Injection (Node.js) ──────────────────────────────────
+  web-003:
+    build: ./web-003
+    container_name: ctf-web-003
+    ports:
+      - "5003:5003"
+    networks: [ ctf-net ]
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: '0.25'
+    labels:
+      - "ctf.challenge=web-003"
+      - "ctf.category=web"
+      - "ctf.difficulty=medium"
+      - "ctf.description=OS Command Injection via ping utility. Read /flag.txt."
+      - "ctf.connection=http://YOUR_IP:5003"
+
+  # ── CRYPTO-001: Broken RSA Oracle (Python) ────────────────────────────────
+  crypto-001:
+    build: ./crypto-001
+    container_name: ctf-crypto-001
+    ports:
+      - "4002:4002"
+    networks: [ ctf-net ]
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: '0.25'
+    labels:
+      - "ctf.challenge=crypto-001"
+      - "ctf.category=crypto"
+      - "ctf.difficulty=medium"
+      - "ctf.description=Weak RSA with e=3 and no padding. Use the cube root attack."
+      - "ctf.connection=nc YOUR_IP 4002"
+
+  # ── SSH-001: Linux Enumeration Box ────────────────────────────────────────
+  ssh-001:
+    build: ./ssh-001
+    container_name: ctf-ssh-001
+    ports:
+      - "2222:22"
+    networks: [ ctf-net ]
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: '0.5'
+    labels:
+      - "ctf.challenge=ssh-001"
+      - "ctf.category=misc"
+      - "ctf.difficulty=easy"
+      - "ctf.description=Enumerate the Linux box. Find hidden flags in the filesystem."
+      - "ctf.connection=ssh ctfuser@YOUR_IP -p 2222 (pass: password123)"
+
+  # ── REV-001: XOR Crackme Binary ───────────────────────────────────────────
+  rev-001:
+    build: ./rev-001
+    container_name: ctf-rev-001
+    ports:
+      - "4003:4003"
+    networks: [ ctf-net ]
+    restart: unless-stopped
+    mem_limit: 64m
+    cpus: '0.25'
+    labels:
+      - "ctf.challenge=rev-001"
+      - "ctf.category=reverse"
+      - "ctf.difficulty=medium"
+      - "ctf.description=Reverse the XOR-encoded crackme to find the secret password."
+      - "ctf.connection=nc YOUR_IP 4003"

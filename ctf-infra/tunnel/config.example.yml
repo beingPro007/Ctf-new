@@ -1,0 +1,38 @@
+tunnel: YOUR_TUNNEL_ID_HERE
+credentials-file: /home/YOUR_USERNAME/.cloudflared/YOUR_TUNNEL_ID_HERE.json
+
+ingress:
+  # ── Web Challenges (HTTP → players just open URL in browser) ──────────────
+
+  # SQL Injection Flask App
+  - hostname: web1.ctf.yourdomain.com
+    service: http://localhost:5001
+
+  # PHP LFI App
+  - hostname: web2.ctf.yourdomain.com
+    service: http://localhost:5002
+
+  # Node.js Command Injection App
+  - hostname: web3.ctf.yourdomain.com
+    service: http://localhost:5003
+
+  # ── TCP Challenges (players need cloudflared client or port forward) ──────
+
+  # PWN - Buffer Overflow (TCP)
+  - hostname: pwn.ctf.yourdomain.com
+    service: tcp://localhost:4001
+
+  # Crypto - RSA Oracle (TCP)
+  - hostname: crypto.ctf.yourdomain.com
+    service: tcp://localhost:4002
+
+  # Reverse - XOR Crackme (TCP)
+  - hostname: rev.ctf.yourdomain.com
+    service: tcp://localhost:4003
+
+  # Misc - SSH Linux Box
+  - hostname: ssh.ctf.yourdomain.com
+    service: ssh://localhost:2222
+
+  # ── Catch-all (required by cloudflared) ──────────────────────────────────
+  - service: http_status:404
